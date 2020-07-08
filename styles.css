@@ -60,6 +60,10 @@ section {
   margin-left: 50px;
 }
 
+#canvas:hover {
+  cursor: pointer;
+}
+
 #message-bar {
   color: rgb(47, 120, 47);
   width: 100%;

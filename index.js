@@ -26,15 +26,25 @@
   const cvs = document.getElementById('canvas');
   const ctx = cvs.getContext('2d');
 
+  let timerId;
   const clearInput = () => (inputField.value = '');
   const hideMessage = () => (messageBar.style.visibility = 'hidden');
-  const showMessage = message => {
+  const showMessage = (message) => {
+    clearTimeout(timerId);
     messageBar.innerHTML = message;
     messageBar.style.visibility = 'visible';
-    setTimeout(() => {
+    timerId = setTimeout(() => {
       messageBar.style.visibility = 'hidden';
     }, 4000);
   };
+
+  function playSound(audio) {
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.currentTime = 0;
+    }
+  }
 
   const state = {
     hits: [],
@@ -65,7 +75,8 @@
         { size: 1, amount: 4 },
       ],
       shipsTypeAmount(typeSize) {
-        return this.shipsTypes.filter(type => type.size === typeSize)[0].amount;
+        return this.shipsTypes.filter((type) => type.size === typeSize)[0]
+          .amount;
       },
       get shipsAmount() {
         return this.shipsTypes.reduce((acc, type) => (acc += type.amount), 0);
@@ -74,18 +85,15 @@
       battleField: null,
       fieldKeys: null,
     },
-    getCell(cellName) {
-      return this.battleField.find(c => c.name === cellName);
-    },
     checkShot(inputValue) {
       if (!inputValue) {
         showMessage('ENTER SOMETHING, CAPTAIN! 🦜');
-        messageSound.play();
+        playSound(messageSound);
         return false;
       }
       if (!this.fieldKeys.includes(inputValue)) {
         showMessage("DON'T UNDERSTAND YOU, SIR! ENTER, FOR EXAMPLE: 'a1' 🦜");
-        messageSound.play();
+        playSound(messageSound);
         return false;
       }
       if (
@@ -93,7 +101,7 @@
         state.misses.includes(inputValue)
       ) {
         showMessage("YOU'VE ALREADY SHOT THERE 🦜");
-        messageSound.play();
+        playSound(messageSound);
         return false;
       }
       return true;
@@ -113,9 +121,7 @@
           state.tries++;
           showMessage('HIT! CHECK THE NEAREST CELLS 🦜');
           this.render();
-          setTimeout(() => {
-            hitSound.play();
-          }, 150);
+          playSound(hitSound);
 
           if (ship.hitsCount === ship.size) {
             showMessage('💥 THE SHIP HAS SUNKED!💥');
@@ -124,16 +130,13 @@
             shipStats[ship.size].value = `${
               Object.keys(
                 state.sunkedShips.filter(
-                  sunkedShip => sunkedShip.size === ship.size,
+                  (sunkedShip) => sunkedShip.size === ship.size,
                 ),
               ).length
             }/${model.board.shipsTypeAmount(ship.size)}`;
           }
 
           if (state.sunkedShips.length === model.board.shipsAmount) {
-            showMessage(
-              `🎉 CONGRATS, CAPTAIN! YOU'VE DONE GAME WITH ${state.tries} TRIES! 🦜`,
-            );
             endGame();
             return;
           }
@@ -143,10 +146,10 @@
       state.misses.push(guess);
       state.tries++;
       this.render();
-      missSound.play();
+      playSound(missSound);
     },
     draw(cellName, type) {
-      const cell = this.getCell(cellName);
+      const cell = this.battleField.find((c) => c.name === cellName);
       switch (type) {
         case 'hit':
           ctx.drawImage(
@@ -180,7 +183,6 @@
       }
     },
     render() {
-      console.log(state);
       ctx.clearRect(
         model.board.deltaX,
         model.board.deltaY,
@@ -275,10 +277,10 @@
       direction === 'horizontal' ? (x += cellSize) : (y += cellSize);
     }
 
-    const occupiedCoords = shipCoords.flatMap(coord =>
+    const occupiedCoords = shipCoords.flatMap((coord) =>
       findOccupiedCoords(coord),
     );
-    const coordsToCells = coords =>
+    const coordsToCells = (coords) =>
       coords.reduce(
         (acc, { x, y }) =>
           acc.concat([letters[x / cellSize], y / cellSize].join('')),
@@ -295,7 +297,7 @@
     let shipCells;
     do {
       shipCells = generateShipCells(size);
-    } while (shipCells[0].some(cell => state.occupiedCells.includes(cell)));
+    } while (shipCells[0].some((cell) => state.occupiedCells.includes(cell)));
 
     state.occupiedCells = [
       ...new Set(state.occupiedCells.concat(shipCells[1])),
@@ -309,7 +311,7 @@
   }
 
   function generateShips() {
-    model.board.shipsTypes.forEach(type => {
+    model.board.shipsTypes.forEach((type) => {
       for (let i = 0; i < type.amount; i++) {
         state.ships.push(ship(type.size));
       }
@@ -323,36 +325,75 @@
     shipStats[4].value = `0/${model.board.shipsTypeAmount(4)}`;
   }
 
-  const onPressEnter = event => {
+  let canvasPosition;
+
+  window.addEventListener('resize', function () {
+    canvasPosition = {
+      x: cvs.offsetLeft + model.board.deltaX,
+      y: cvs.offsetTop + model.board.deltaY,
+    };
+  });
+
+  function onClickCell(e) {
+    e.preventDefault();
+    canvasPosition = {
+      x: cvs.offsetLeft + model.board.deltaX,
+      y: cvs.offsetTop + model.board.deltaY,
+    };
+    let mousePos = {
+      x: e.pageX - canvasPosition.x,
+      y: e.pageY - canvasPosition.y,
+    };
+    if (mousePos.x < 0 || mousePos.y < 0) {
+      return;
+    }
+    const clickedCell = {
+      x: mousePos.x - (mousePos.x % model.board.cellSize),
+      y: mousePos.y - (mousePos.y % model.board.cellSize),
+    };
+    const cellName = model.battleField
+      .filter(
+        (cell) => cell.pos.x === clickedCell.x && cell.pos.y === clickedCell.y,
+      )
+      .map((cell) => cell.name)[0];
+    model.fire(cellName, 'mouseClick');
+  }
+
+  function onPressEnter(event) {
     if (event.keyCode === 13) {
       hideMessage();
-      model.fire(inputField.value.toUpperCase());
+      model.fire(inputField.value.toUpperCase(), 'inputClick');
     }
-  };
+  }
 
   function startGame() {
-    clickSound.play();
+    playSound(clickSound);
     inputField.focus();
     model.battleField = createField();
-    model.fieldKeys = model.battleField.map(cell => cell.name);
+    model.fieldKeys = model.battleField.map((cell) => cell.name);
     generateShips();
     setStartStats();
     startButton.disabled = true;
     startButton.classList.add('is-disabled');
     showMessage("HELLO, CAPTAIN! IT'S TIME TO SHOOT! 🦜");
 
-    window.addEventListener('keyup', onPressEnter);
     fireButton.onclick = () => {
       inputField.focus();
       hideMessage();
-      model.fire(inputField.value.toUpperCase());
+      model.fire(inputField.value.toUpperCase(), 'inputClick');
     };
+    window.addEventListener('keyup', onPressEnter);
+    cvs.addEventListener('click', onClickCell);
   }
 
   function endGame() {
     fireButton.disabled = true;
     fireButton.classList.add('is-disabled');
     window.removeEventListener('keyup', onPressEnter);
+    cvs.removeEventListener('click', onClickCell);
+    clearTimeout(timerId);
+    const finalMessage = `🎉 CONGRATS, CAPTAIN! YOU'VE DONE GAME WITH ${state.tries} TRIES! 🦜`;
+    messageBar.innerHTML = finalMessage;
     messageBar.style.visibility = 'visible';
   }
 

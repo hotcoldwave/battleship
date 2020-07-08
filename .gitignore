@@ -1,1 +1,8 @@
+yarn.lock
 .prettierrc
+.eslintrc
+.babelrc
+package.json
+node_modules
+lib 
+src

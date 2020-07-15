@@ -46,13 +46,13 @@
     }
   }
 
-  const state = {
+  const gameStats = {
     hits: [],
     misses: [],
     tries: 0,
     sunkedShips: [],
-    get sunkedCells() {
-      return state.sunkedShips.reduce(
+    get cellsWithHits() {
+      return gameStats.sunkedShips.reduce(
         (acc, sunkedShip) => acc.concat(sunkedShip.locations),
         [],
       );
@@ -61,150 +61,143 @@
     ships: [],
   };
 
-  const model = {
-    board: {
-      sideWidth: 570,
-      cellsInLine: 10,
-      cellSize: 57,
-      deltaX: 30,
-      deltaY: 36,
-      shipsTypes: [
-        { size: 4, amount: 2 },
-        { size: 3, amount: 3 },
-        { size: 2, amount: 4 },
-        { size: 1, amount: 4 },
-      ],
-      shipsTypeAmount(typeSize) {
-        return this.shipsTypes.filter((type) => type.size === typeSize)[0]
-          .amount;
-      },
-      get shipsAmount() {
-        return this.shipsTypes.reduce((acc, type) => (acc += type.amount), 0);
-      },
-      letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
-      battleField: null,
-      fieldKeys: null,
+  const board = {
+    sideWidth: 570,
+    cellsInLine: 10,
+    cellSize: 57,
+    deltaX: 30,
+    deltaY: 36,
+    shipsTypes: [
+      { size: 4, amount: 2 },
+      { size: 3, amount: 3 },
+      { size: 2, amount: 4 },
+      { size: 1, amount: 4 },
+    ],
+    shipsTypeAmount(typeSize) {
+      return this.shipsTypes.filter((type) => type.size === typeSize)[0].amount;
     },
-    checkShot(inputValue) {
-      if (!inputValue) {
-        showMessage('ENTER SOMETHING, CAPTAIN! 🦜');
-        playSound(messageSound);
-        return false;
-      }
-      if (!this.fieldKeys.includes(inputValue)) {
-        showMessage("DON'T UNDERSTAND YOU, SIR! ENTER, FOR EXAMPLE: 'a1' 🦜");
-        playSound(messageSound);
-        return false;
-      }
-      if (
-        state.hits.includes(inputValue) ||
-        state.misses.includes(inputValue)
-      ) {
-        showMessage("YOU'VE ALREADY SHOT THERE 🦜");
-        playSound(messageSound);
-        return false;
-      }
-      return true;
+    get shipsAmount() {
+      return this.shipsTypes.reduce((acc, type) => (acc += type.amount), 0);
     },
-    fire(guess) {
-      clearInput();
-      if (!this.checkShot(guess)) {
-        return;
-      }
-      for (let ship of state.ships) {
-        const { locations } = ship;
-        const index = locations.indexOf(guess);
-
-        if (index != -1) {
-          state.hits.push(guess);
-          ship.hitsCount++;
-          state.tries++;
-          showMessage('HIT! CHECK THE NEAREST CELLS 🦜');
-          this.render();
-          playSound(hitSound);
-
-          if (ship.hitsCount === ship.size) {
-            showMessage('💥 THE SHIP HAS SUNKED!💥');
-            state.sunkedShips.push(ship);
-            this.render();
-            shipStats[ship.size].value = `${
-              Object.keys(
-                state.sunkedShips.filter(
-                  (sunkedShip) => sunkedShip.size === ship.size,
-                ),
-              ).length
-            }/${model.board.shipsTypeAmount(ship.size)}`;
-          }
-
-          if (state.sunkedShips.length === model.board.shipsAmount) {
-            endGame();
-            return;
-          }
-          return;
-        }
-      }
-      state.misses.push(guess);
-      state.tries++;
-      this.render();
-      playSound(missSound);
-    },
-    draw(cellName, type) {
-      const cell = this.battleField.find((c) => c.name === cellName);
-      switch (type) {
-        case 'hit':
-          ctx.drawImage(
-            hit,
-            cell.pos.x + model.board.deltaX,
-            cell.pos.y + model.board.deltaY,
-            model.board.cellSize,
-            model.board.cellSize,
-          );
-          break;
-        case 'miss':
-          ctx.drawImage(
-            miss,
-            cell.pos.x + model.board.deltaX,
-            cell.pos.y + model.board.deltaY,
-            model.board.cellSize,
-            model.board.cellSize,
-          );
-          break;
-        case 'cross':
-          ctx.drawImage(
-            cross,
-            cell.pos.x + model.board.deltaX,
-            cell.pos.y + model.board.deltaY,
-            model.board.cellSize,
-            model.board.cellSize,
-          );
-          break;
-        default:
-          break;
-      }
-    },
-    render() {
-      ctx.clearRect(
-        model.board.deltaX,
-        model.board.deltaY,
-        model.board.sideWidth,
-        model.board.sideWidth,
-      );
-      for (let hitCell of state.hits) {
-        if (state.sunkedCells.includes(hitCell)) {
-          this.draw(hitCell, 'hit');
-          this.draw(hitCell, 'cross');
-        } else {
-          this.draw(hitCell, 'hit');
-        }
-      }
-      for (let missCell of state.misses) {
-        this.draw(missCell, 'miss');
-      }
-    },
+    letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
+    battleField: null,
+    fieldKeys: null,
   };
 
+  function checkShot(inputValue) {
+    if (!inputValue) {
+      showMessage('ENTER SOMETHING, CAPTAIN! 🦜');
+      playSound(messageSound);
+      return false;
+    }
+    if (!board.fieldKeys.includes(inputValue)) {
+      showMessage("DON'T UNDERSTAND YOU, SIR! ENTER, FOR EXAMPLE: 'a1' 🦜");
+      playSound(messageSound);
+      return false;
+    }
+    if (
+      gameStats.hits.includes(inputValue) ||
+      gameStats.misses.includes(inputValue)
+    ) {
+      showMessage("YOU'VE ALREADY SHOT THERE 🦜");
+      playSound(messageSound);
+      return false;
+    }
+    return true;
+  }
+
+  function fire(guess) {
+    clearInput();
+    if (!checkShot(guess)) {
+      return;
+    }
+    for (let ship of gameStats.ships) {
+      const { locations } = ship;
+      const index = locations.indexOf(guess);
+
+      if (index != -1) {
+        gameStats.tries++;
+        gameStats.hits.push(guess);
+        ship.hitsCount++;
+        playSound(hitSound);
+        showMessage('HIT! CHECK THE NEAREST CELLS 🦜');
+
+        if (ship.hitsCount === ship.size) {
+          gameStats.sunkedShips.push(ship);
+          shipStats[ship.size].value = `${
+            Object.keys(
+              gameStats.sunkedShips.filter(
+                (sunkedShip) => sunkedShip.size === ship.size,
+              ),
+            ).length
+          }/${board.shipsTypeAmount(ship.size)}`;
+          showMessage('💥 THE SHIP HAS SUNKED!💥');
+        }
+
+        if (gameStats.sunkedShips.length === board.shipsAmount) {
+          endGame();
+          return;
+        }
+        return;
+      }
+    }
+    gameStats.misses.push(guess);
+    gameStats.tries++;
+    playSound(missSound);
+  }
+
+  function draw(cellName, type) {
+    const cell = board.battleField.find((c) => c.name === cellName);
+    switch (type) {
+      case 'hit':
+        ctx.drawImage(
+          hit,
+          cell.pos.x + board.deltaX,
+          cell.pos.y + board.deltaY,
+          board.cellSize,
+          board.cellSize,
+        );
+        break;
+      case 'miss':
+        ctx.drawImage(
+          miss,
+          cell.pos.x + board.deltaX,
+          cell.pos.y + board.deltaY,
+          board.cellSize,
+          board.cellSize,
+        );
+        break;
+      case 'cross':
+        ctx.drawImage(
+          cross,
+          cell.pos.x + board.deltaX,
+          cell.pos.y + board.deltaY,
+          board.cellSize,
+          board.cellSize,
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
+  function render() {
+    ctx.clearRect(board.deltaX, board.deltaY, board.sideWidth, board.sideWidth);
+    for (let hitCell of gameStats.hits) {
+      if (gameStats.cellsWithHits.includes(hitCell)) {
+        draw(hitCell, 'hit');
+        draw(hitCell, 'cross');
+      } else {
+        draw(hitCell, 'hit');
+      }
+    }
+    for (let missCell of gameStats.misses) {
+      draw(missCell, 'miss');
+    }
+  }
+
   function createField() {
-    const { sideWidth, cellSize, letters } = model.board;
+    const { sideWidth, cellSize, letters } = board;
     const result = [];
     let x = 0;
 
@@ -223,7 +216,7 @@
   }
 
   function generateStartLocation(shipSize) {
-    const { cellsInLine, cellSize } = model.board;
+    const { cellsInLine, cellSize } = board;
     let x, y;
     let direction =
       Math.floor(Math.random() * 2) === 1 ? 'horizontal' : 'vertical';
@@ -247,7 +240,7 @@
 
   function findOccupiedCoords(coords) {
     const { x, y } = coords;
-    const { cellSize, sideWidth } = model.board;
+    const { cellSize, sideWidth } = board;
     const rawOccupiedCells = [];
 
     for (let xFactor = -1; xFactor <= 1; xFactor++) {
@@ -267,7 +260,7 @@
   }
 
   function generateShipCells(shipSize) {
-    const { letters, cellSize } = model.board;
+    const { letters, cellSize } = board;
     const startCell = generateStartLocation(shipSize);
     let { x, y, direction } = startCell;
 
@@ -297,10 +290,12 @@
     let shipCells;
     do {
       shipCells = generateShipCells(size);
-    } while (shipCells[0].some((cell) => state.occupiedCells.includes(cell)));
+    } while (
+      shipCells[0].some((cell) => gameStats.occupiedCells.includes(cell))
+    );
 
-    state.occupiedCells = [
-      ...new Set(state.occupiedCells.concat(shipCells[1])),
+    gameStats.occupiedCells = [
+      ...new Set(gameStats.occupiedCells.concat(shipCells[1])),
     ];
 
     return {
@@ -311,34 +306,34 @@
   }
 
   function generateShips() {
-    model.board.shipsTypes.forEach((type) => {
+    board.shipsTypes.forEach((type) => {
       for (let i = 0; i < type.amount; i++) {
-        state.ships.push(ship(type.size));
+        gameStats.ships.push(ship(type.size));
       }
     });
   }
 
   function setStartStats() {
-    shipStats[1].value = `0/${model.board.shipsTypeAmount(1)}`;
-    shipStats[2].value = `0/${model.board.shipsTypeAmount(2)}`;
-    shipStats[3].value = `0/${model.board.shipsTypeAmount(3)}`;
-    shipStats[4].value = `0/${model.board.shipsTypeAmount(4)}`;
+    shipStats[1].value = `0/${board.shipsTypeAmount(1)}`;
+    shipStats[2].value = `0/${board.shipsTypeAmount(2)}`;
+    shipStats[3].value = `0/${board.shipsTypeAmount(3)}`;
+    shipStats[4].value = `0/${board.shipsTypeAmount(4)}`;
   }
 
   let canvasPosition;
 
   window.addEventListener('resize', function () {
     canvasPosition = {
-      x: cvs.offsetLeft + model.board.deltaX,
-      y: cvs.offsetTop + model.board.deltaY,
+      x: cvs.offsetLeft + board.deltaX,
+      y: cvs.offsetTop + board.deltaY,
     };
   });
 
   function onClickCell(e) {
     e.preventDefault();
     canvasPosition = {
-      x: cvs.offsetLeft + model.board.deltaX,
-      y: cvs.offsetTop + model.board.deltaY,
+      x: cvs.offsetLeft + board.deltaX,
+      y: cvs.offsetTop + board.deltaY,
     };
     let mousePos = {
       x: e.pageX - canvasPosition.x,
@@ -348,40 +343,45 @@
       return;
     }
     const clickedCell = {
-      x: mousePos.x - (mousePos.x % model.board.cellSize),
-      y: mousePos.y - (mousePos.y % model.board.cellSize),
+      x: mousePos.x - (mousePos.x % board.cellSize),
+      y: mousePos.y - (mousePos.y % board.cellSize),
     };
-    const cellName = model.battleField
+    const cellName = board.battleField
       .filter(
         (cell) => cell.pos.x === clickedCell.x && cell.pos.y === clickedCell.y,
       )
       .map((cell) => cell.name)[0];
-    model.fire(cellName, 'mouseClick');
+    fire(cellName, 'mouseClick');
+    render();
   }
 
-  function onPressEnter(event) {
-    if (event.keyCode === 13) {
+  function onPressEnter(e) {
+    if (e.keyCode === 13) {
       hideMessage();
-      model.fire(inputField.value.toUpperCase(), 'inputClick');
+      fire(inputField.value.toUpperCase(), 'inputClick');
+      render();
     }
   }
 
-  function startGame() {
-    playSound(clickSound);
+  function onPressFire() {
     inputField.focus();
-    model.battleField = createField();
-    model.fieldKeys = model.battleField.map((cell) => cell.name);
+    hideMessage();
+    fire(inputField.value.toUpperCase(), 'inputClick');
+    render();
+  }
+
+  function startGame() {
+    board.battleField = createField();
+    board.fieldKeys = board.battleField.map((cell) => cell.name);
     generateShips();
     setStartStats();
     startButton.disabled = true;
     startButton.classList.add('is-disabled');
+
+    playSound(clickSound);
     showMessage("HELLO, CAPTAIN! IT'S TIME TO SHOOT! 🦜");
 
-    fireButton.onclick = () => {
-      inputField.focus();
-      hideMessage();
-      model.fire(inputField.value.toUpperCase(), 'inputClick');
-    };
+    fireButton.onclick = onPressFire;
     window.addEventListener('keyup', onPressEnter);
     cvs.addEventListener('click', onClickCell);
   }
@@ -392,7 +392,8 @@
     window.removeEventListener('keyup', onPressEnter);
     cvs.removeEventListener('click', onClickCell);
     clearTimeout(timerId);
-    const finalMessage = `🎉 CONGRATS, CAPTAIN! YOU'VE DONE GAME WITH ${state.tries} TRIES! 🦜`;
+
+    const finalMessage = `🎉 CONGRATS, CAPTAIN! YOU'VE DONE GAME WITH ${gameStats.tries} TRIES! 🦜`;
     messageBar.innerHTML = finalMessage;
     messageBar.style.visibility = 'visible';
   }

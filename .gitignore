@@ -4,5 +4,3 @@ yarn.lock
 .babelrc
 package.json
 node_modules
-lib 
-src

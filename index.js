@@ -13,17 +13,17 @@
   miss.src = './img/miss.png';
   cross.src = './img/cross.png';
 
-  const startButton = document.getElementById('start-button');
-  const fireButton = document.getElementById('fire-button');
-  const inputField = document.getElementById('input-field');
-  const messageBar = document.getElementById('message-bar');
+  const startButton = document.querySelector('.start-button');
+  const fireButton = document.querySelector('.fire-button');
+  const inputField = document.querySelector('.input-field');
+  const messageBar = document.querySelector('.message-bar');
   const shipStats = {
-    1: document.getElementById('1x-ships'),
-    2: document.getElementById('2x-ships'),
-    3: document.getElementById('3x-ships'),
-    4: document.getElementById('4x-ships'),
+    1: document.querySelector('.stats__1x-ships'),
+    2: document.querySelector('.stats__2x-ships'),
+    3: document.querySelector('.stats__3x-ships'),
+    4: document.querySelector('.stats__4x-ships'),
   };
-  const cvs = document.getElementById('canvas');
+  const cvs = document.querySelector('#canvas');
   const ctx = cvs.getContext('2d');
 
   let timerId;

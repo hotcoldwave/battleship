@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+  
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,71 +15,78 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
+
   <body>
-    <h1>Battleship</h1>
-    <div id="message-bar">this message is hidden</div>
-    <main>
-      <section id="menu">
-        <h3>Menu:</h3>
-        <div id="controls">
-          <button id="start-button" class="nes-btn is-success">Start game</button>
-          <div class="nes-field is-inline">
+  <h1 class = "title">Battleship</h1>
+  <div class="message-bar">this message is hidden</div>
+    <main class = game>
+      <section class="game__panel menu">
+        <h2 class = "subtitle">Menu:</h2>
+        <div class="controls">
+          <button class="button start-button nes-btn is-success">Start game</button>
+          <div class="controls__panel nes-field is-inline">
             <input
               type="text"
-              class="nes-input is-warning"
-              id="input-field"
+              class="input-field nes-input is-warning"
               maxlength="2"
               size="5"
               placeholder = "a1"
             />
-            <button type="button" class="nes-btn is-warning" id="fire-button" >
+            <button type="button" class="button fire-button nes-btn is-warning">
               FIRE!
             </button>
           </div>
         </div>
       </section>
       <canvas id="canvas" width="600" height="610"></canvas>
-      <section id="stats">
-        <h3>Stats:</h3>
-        <p>
-          4x-ships:<input
+      <section class="game__panel stats">
+        <h2 class = "subtitle">Stats:</h2>
+        <ul class = stats-list>
+          <li>
+            <span>4x-ships:</span>
+            <input
             type="text"
             size="3"
-            id="4x-ships"
+            class="stats__4x-ships"
             value="0"
             readonly
-          />
-          <p>
-            3x-ships:<input
-              type="text"
-              size="3"
-              id="3x-ships"
-              value="0"
-              readonly
-            />
-            <p>
-              2x-ships:<input
-                type="text"
-                size="3"
-                id="2x-ships"
-                value="0"
-                readonly
-              />
-              <p>
-                1x-ships:<input
-                  type="text"
-                  size="3"
-                  id="1x-ships"
-                  value="0"
-                  readonly
-                />
+            tabindex="-1"/></li>
+          <li> <span>3x-ships:</span>
+            <input
+            type="text"
+            size="3"
+            class="stats__3x-ships"
+            value="0"
+            readonly
+            tabindex="-1"
+          /></li>
+          <li><span>2x-ships:</span> 
+            <input
+            type="text"
+            size="3"
+            class="stats__2x-ships"
+            value="0"
+            readonly
+            tabindex="-1"
+          /></li>
+          <li>       
+            <span>1x-ships:</span> 
+            <input
+            type="text"
+            size="3"
+            class="stats__1x-ships"
+            value="0"
+            readonly
+            tabindex="-1" /></li>
+        </ul>
       </section>
     </main>
-    <footer>
-      <a href="https://github.com/hotcoldwave" target="_blank">
-        <i class="nes-icon github is-medium"></i>
+    <footer class = "footer">
+      <a href="https://github.com/hotcoldwave" target="_blank" aria-label="Github Link">
+        <i class="icon nes-icon github is-medium"></i>
       </a>
     </footer>
     <script src="./index.js"></script>
+
   </body>
 </html>

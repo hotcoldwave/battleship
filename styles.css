@@ -15,6 +15,15 @@ html, body {
   height: 100%;
 }
 
+#canvas {
+  background-image: url('img/sea.png');
+  display: block;
+}
+
+#canvas:hover {
+  cursor: pointer;
+}
+
 .game {
   flex: 1 0 auto;
   display: grid;
@@ -60,15 +69,6 @@ html, body {
   text-transform: uppercase;
 }
 
-#canvas {
-  background-image: url('img/sea.png');
-  display: block;
-}
-
-#canvas:hover {
-  cursor: pointer;
-}
-
 .stats-list {
   margin: 0;
   padding:0;
@@ -85,9 +85,3 @@ html, body {
   flex-shrink: 0;
   padding: 20px;
 } 
-
-
-
-
-
-

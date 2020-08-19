@@ -1,0 +1,16 @@
+{
+  "name": "battleship",
+  "version": "1.0.0",
+  "description": "Battleship game",
+  "main": "index.html",
+  "repository": {
+    "url": "https://github.com/hotcoldwave/battleship",
+    "type": "git"
+  },
+  "author": "Egor Kukobin",
+  "devDependencies": {
+    "prettier": "^2.0.5",
+    "stylelint": "^13.6.1",
+    "stylelint-config-standard": "^20.0.0"
+  }
+}

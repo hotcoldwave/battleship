@@ -31,7 +31,7 @@
   const hideMessage = () => (messageBar.style.visibility = 'hidden');
   const showMessage = (message) => {
     clearTimeout(timerId);
-    messageBar.innerHTML = message;
+    messageBar.textContent = message;
     messageBar.style.visibility = 'visible';
     timerId = setTimeout(() => {
       messageBar.style.visibility = 'hidden';
@@ -394,7 +394,7 @@
     clearTimeout(timerId);
 
     const finalMessage = `🎉 CONGRATS, CAPTAIN! YOU'VE DONE GAME WITH ${gameStats.tries} TRIES! 🦜`;
-    messageBar.innerHTML = finalMessage;
+    messageBar.textContent = finalMessage;
     messageBar.style.visibility = 'visible';
   }
 

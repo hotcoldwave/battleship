@@ -11,7 +11,8 @@ body {
   flex-direction: column;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -71,9 +72,9 @@ html, body {
 
 .stats-list {
   margin: 0;
-  padding:0;
+  padding: 0;
   text-align: left;
-  list-style:none;
+  list-style: none;
 }
 
 .stats-list > li {
@@ -84,4 +85,4 @@ html, body {
 .footer {
   flex-shrink: 0;
   padding: 20px;
-} 
+}
